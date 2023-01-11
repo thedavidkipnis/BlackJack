@@ -1,0 +1,4 @@
+NUM_PLAYERS = None
+
+SCREEN_X = None
+SCREEN_Y = None

@@ -1,6 +1,8 @@
 import arcade
 import arcade.gui
-import ButtonStyles as bs
+import ButtonStyles as buttonStyles
+import GameData as gameData
+from screeninfo import get_monitors
 
 
 class QuitButton(arcade.gui.UIFlatButton):
@@ -25,7 +27,7 @@ class PlayerSelectionButton(arcade.gui.UIFlatButton):
         self.num = num
 
     def on_click(self, event: arcade.gui.UIOnClickEvent):
-        print(self.num)
+        gameData.NUM_PLAYERS = self.num
         arcade.close_window()
 
 
@@ -41,11 +43,11 @@ class SetupMenu(arcade.Window):
         self.v_box = arcade.gui.UIBoxLayout()
         self.h_box = arcade.gui.UIBoxLayout(vertical=False)
 
-        selection_label = arcade.gui.UIFlatButton(text="Select # of Players", style=bs.disabled_button, width=300, height=100)
+        selection_label = arcade.gui.UIFlatButton(text="Select # of Players", style=buttonStyles.disabled_button, width=300, height=100)
         self.v_box.add(selection_label.with_space_around(bottom=20))
 
         for i in range(1, 5):
-            selection_button = PlayerSelectionButton(text=str(i), width=100, height=100, num=i, style=bs.red_style)
+            selection_button = PlayerSelectionButton(text=str(i), width=100, height=100, num=i, style=buttonStyles.red_style)
             self.h_box.add(selection_button.with_space_around(right=20, left=20))
 
         self.v_box.add(self.h_box.with_space_around(bottom=100))
@@ -66,14 +68,54 @@ class SetupMenu(arcade.Window):
         self.manager.draw()
 
 
+class GameWindow(arcade.Window):
+    def __init__(self, screen_width, screen_height, player_count, title):
+        super().__init__(screen_width, screen_height, title)
+
+        self.player_count = player_count
+
+        arcade.set_background_color(arcade.color.GREEN_YELLOW)
+
+    def on_draw(self):
+        self.clear()
+        arcade.start_render()
+
+        arcade.draw_text(str(self.player_count), 300, start_y=400)
+
+
+def get_screen_dimensions():
+    screen_width = None
+    screen_height = None
+
+    for m in get_monitors():
+        if m.is_primary:
+            screen_width = m.width
+            screen_height = m.height
+            return screen_width, screen_height
 
 
 def main():
-    # TODO: get screen size from os for setup menu
+
+    screen_dimensions = get_screen_dimensions()
+
+    if screen_dimensions is None:
+        print("Error fetching screen dimensions.")
+        return
+
+    gameData.SCREEN_X = screen_dimensions[0]
+    gameData.SCREEN_Y = screen_dimensions[1]
+
     setup_window = SetupMenu(600, 800, "Black Jack Setup")
     setup_window.run()
-    setup_window = SetupMenu(800, 600, "Black Jack")
-    setup_window.run()
+
+    if gameData.NUM_PLAYERS is None:
+        arcade.exit()
+
+    game_window = GameWindow(gameData.SCREEN_X,
+                             gameData.SCREEN_Y,
+                             gameData.NUM_PLAYERS,
+                             "Black Jack")
+    game_window.run()
 
 
 if __name__ == "__main__":
