@@ -2,3 +2,5 @@ NUM_PLAYERS = None
 
 SCREEN_X = None
 SCREEN_Y = None
+
+CARD_SPRITE_SCALING = 1

@@ -2,6 +2,7 @@ import arcade
 import arcade.gui
 import ButtonStyles as buttonStyles
 import GameData as gameData
+import Card
 from screeninfo import get_monitors
 
 
@@ -74,13 +75,27 @@ class GameWindow(arcade.Window):
 
         self.player_count = player_count
 
+        self.card_list = None
+
         arcade.set_background_color(arcade.color.GREEN_YELLOW)
+
+    def setup(self):
+        self.card_list = arcade.SpriteList()
+
+        test_card = Card.Card(image_path="Card_Sprites/Hearts_King.png",
+                              scaling=gameData.CARD_SPRITE_SCALING,
+                              suit="Hearts", value=13)
+
+        test_card.center_y = gameData.SCREEN_Y / 2
+        test_card.center_x = gameData.SCREEN_X / 2
+
+        self.card_list.append(test_card)
 
     def on_draw(self):
         self.clear()
         arcade.start_render()
 
-        arcade.draw_text(str(self.player_count), 300, start_y=400)
+        self.card_list.draw()
 
 
 def get_screen_dimensions():
@@ -110,11 +125,13 @@ def main():
 
     if gameData.NUM_PLAYERS is None:
         arcade.exit()
+        return
 
     game_window = GameWindow(gameData.SCREEN_X,
                              gameData.SCREEN_Y,
                              gameData.NUM_PLAYERS,
                              "Black Jack")
+    game_window.setup()
     game_window.run()
 
 
