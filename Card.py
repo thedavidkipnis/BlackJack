@@ -1,6 +1,11 @@
 import arcade
 
 
+"""
+Class representing a Card object in the game.
+"""
+
+
 class Card(arcade.Sprite):
 
     def __init__(self, image_path: str, scaling: float, suit: str, value: int):
