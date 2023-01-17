@@ -1,20 +1,12 @@
+from screeninfo import get_monitors
+import os
+import random
 import arcade
 import arcade.gui
 import ButtonStyles as buttonStyles
 import GameData as gameData
 import Card
-from screeninfo import get_monitors
-import os
-import random
-
-
-class ShuffleButton(arcade.gui.UIFlatButton):
-    def __init__(self, deck: arcade.SpriteList, **kwargs):
-        super().__init__(**kwargs)
-        self.deck = deck
-
-    def on_click(self, event: arcade.gui.UIOnClickEvent):
-        shuffle_deck(self.deck)
+import Player
 
 
 class QuitButton(arcade.gui.UIFlatButton):
@@ -91,20 +83,25 @@ class GameWindow(arcade.Window):
 
         self.player_count = player_count
 
+        self.players = None
         self.card_list = None
+        self.ui_elements = None
 
         arcade.set_background_color(arcade.color.GREEN_YELLOW)
 
     def setup(self):
+        self.players = generate_players(self.player_count)
         self.card_list = generate_card_deck()
-        shuffle_button = ShuffleButton(text="Shuffle", width=150, height=100, deck=self.card_list)
+        self.ui_elements = arcade.SpriteList()
 
-        self.manager.add(
-            arcade.gui.UIAnchorWidget(
-                align_x=500,
-                align_y=-300,
-                child=shuffle_button)
-        )
+        gameData.CURRENT_TURN = 0
+
+        turn_pointer = arcade.Sprite("UI_Sprites/Pointer.png",
+                                     gameData.UI_SPRITE_SCALING,
+                                     center_x=self.players[0].center_x,
+                                     center_y=self.players[0].center_y - self.players[0].height)
+
+        self.ui_elements.append(turn_pointer)
 
     def on_draw(self):
         self.clear()
@@ -112,12 +109,33 @@ class GameWindow(arcade.Window):
 
         self.manager.draw()
         self.card_list.draw()
+        self.players.draw()
+        self.ui_elements.draw()
+
+
+def generate_players(player_count: int):
+    players = arcade.SpriteList()
+    x_offset = gameData.SCREEN_X / player_count
+    x_start = gameData.SCREEN_X / (player_count*2)
+    for i in range(player_count):
+        set_x = (i * x_offset) + x_start
+        set_y = gameData.SCREEN_Y / 4.5
+        cur_player = Player.Player(image_path="Player_Sprites/P" + str(i + 1) + ".png",
+                                   scaling=gameData.PLAYER_SPRITE_SCALING,
+                                   money=20, cards=[],
+                                   location_x=set_x,
+                                   location_y=set_y)
+
+        cur_player.center_x = set_x
+        cur_player.center_y = set_y
+
+        players.append(cur_player)
+
+    return players
 
 
 def generate_card_deck():
     deck = arcade.SpriteList()
-
-    counter = 0
 
     for filename in os.listdir('Card_Sprites'):
         if filename == 'Back.png':
@@ -126,19 +144,27 @@ def generate_card_deck():
 
         filename = filename.split('_')
         card_suit = filename[0]
-        card_val = filename[1].split('.')[0]
+        card_val = get_value_from_card_name(filename[1].split('.')[0])
 
         cur_card = Card.Card(image_path=file_path,
                              scaling=gameData.CARD_SPRITE_SCALING,
                              suit=card_suit, value=card_val)
 
-        cur_card.center_y = 200 + (200 * (counter // 22))
-        cur_card.center_x = 85 + (40 * (counter % 22))
-        counter += 1
+        cur_card.center_y = -100
+        cur_card.center_x = -100
 
         deck.append(cur_card)
 
     return deck
+
+
+def get_value_from_card_name(value_string: str):
+    if value_string == "Jack" or "Queen" or "King":
+        return 10
+    elif value_string == "Ace":
+        return 1
+    else:
+        return int(value_string)
 
 
 def shuffle_deck(deck):

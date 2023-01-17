@@ -3,7 +3,7 @@ import arcade
 
 class Card(arcade.Sprite):
 
-    def __init__(self, image_path, scaling, suit, value):
+    def __init__(self, image_path: str, scaling: float, suit: str, value: int):
         super().__init__(image_path, scaling)
 
         self.texture = arcade.load_texture(image_path)
