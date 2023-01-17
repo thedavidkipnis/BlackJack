@@ -9,6 +9,11 @@ import Card
 import Player
 
 
+class TestButton(arcade.gui.UIFlatButton):
+    def on_click(self, event: arcade.gui.UIOnClickEvent):
+        gameData.CURRENT_TURN = (gameData.CURRENT_TURN + 1) % gameData.NUM_PLAYERS
+
+
 class QuitButton(arcade.gui.UIFlatButton):
     def on_click(self, event: arcade.gui.UIOnClickEvent):
         arcade.exit()
@@ -87,6 +92,8 @@ class GameWindow(arcade.Window):
         self.card_list = None
         self.ui_elements = None
 
+        self.turn_pointer = None
+
         arcade.set_background_color(arcade.color.GREEN_YELLOW)
 
     def setup(self):
@@ -96,12 +103,12 @@ class GameWindow(arcade.Window):
 
         gameData.CURRENT_TURN = 0
 
-        turn_pointer = arcade.Sprite("UI_Sprites/Pointer.png",
+        self.turn_pointer = arcade.Sprite("UI_Sprites/Pointer.png",
                                      gameData.UI_SPRITE_SCALING,
                                      center_x=self.players[0].center_x,
                                      center_y=self.players[0].center_y - self.players[0].height)
 
-        self.ui_elements.append(turn_pointer)
+        self.ui_elements.append(self.turn_pointer)
 
     def on_draw(self):
         self.clear()
@@ -111,6 +118,10 @@ class GameWindow(arcade.Window):
         self.card_list.draw()
         self.players.draw()
         self.ui_elements.draw()
+
+    def on_update(self, delta_time: float):
+        self.turn_pointer.center_x = self.players[gameData.CURRENT_TURN].center_x
+        self.turn_pointer.center_y = self.players[gameData.CURRENT_TURN].center_y - self.players[gameData.CURRENT_TURN].height
 
 
 def generate_players(player_count: int):
