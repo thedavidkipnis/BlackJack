@@ -21,22 +21,3 @@ class Player(arcade.Sprite):
     def __call__(self, image_path, scaling, money, cards, can_play_this_round, location_x, location_y):
         return Player(image_path=image_path, scaling=scaling, money=money, cards=cards,
                       can_play_this_round=can_play_this_round, location_x=location_x, location_y=location_y)
-
-    # Getter/Setter methods
-    def get_money(self):
-        return self.money
-
-    def set_money(self, money: int):
-        self.money = money
-
-    def get_cards(self):
-        return self.cards
-
-    def set_cards(self, cards):
-        self.cards = cards
-
-    def add_card(self, card: Card):
-        self.cards.append(card)
-
-    def set_turn(self, can_play: bool):
-        self.can_play_this_round = can_play

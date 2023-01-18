@@ -1,17 +1,30 @@
 from screeninfo import get_monitors
-import os
-import random
 import arcade
 import arcade.gui
 import ButtonStyles as buttonStyles
 import GameData as gameData
-import Card
-import Player
+import BlackJackGame
 
 
-class TestButton(arcade.gui.UIFlatButton):
+class PlayerStandButton(arcade.gui.UIFlatButton):
+
+    def __init__(self,
+                 x: float = 0,
+                 y: float = 0,
+                 width: float = 100,
+                 height: float = 50,
+                 text="",
+                 size_hint=None,
+                 size_hint_min=None,
+                 size_hint_max=None,
+                 style=None,
+                 game=None,
+                 **kwargs):
+        super().__init__(x, y, width, height, text, size_hint, size_hint_min, size_hint_max, style)
+        self.game = game
+
     def on_click(self, event: arcade.gui.UIOnClickEvent):
-        gameData.CURRENT_TURN = (gameData.CURRENT_TURN + 1) % gameData.NUM_PLAYERS
+        self.game.current_turn = (self.game.current_turn + 1) % self.game.num_players
 
 
 class QuitButton(arcade.gui.UIFlatButton):
@@ -108,157 +121,64 @@ class GameWindow(arcade.Window):
     """
 
     # Method for initializing an instance of main game
-    def __init__(self, screen_width, screen_height, player_count, title):
+    def __init__(self, screen_width, screen_height, title):
         super().__init__(screen_width, screen_height, title)
 
-        # manager that tracks and draws ui elements
-        self.manager = arcade.gui.UIManager()
-        self.manager.enable()
+        self.game = None
 
-        self.player_count = player_count  # received from the setup menu
-
-        # fields that keep track of card, player, and ui lists
-        self.players = None
-        self.card_list = None
         self.ui_elements = None
+        self.ui_manager = None
 
-        # visual pointer for showing which player's turn it is
         self.turn_pointer = None
 
-        arcade.set_background_color(arcade.color.GREEN_YELLOW)
-
-    # Method for setting up instances of fields and game Sprites
+    # Instantiates game and UI elements list
     def setup(self):
-        self.players = generate_players(self.player_count)
-        self.card_list = generate_card_deck()
+        self.game = BlackJackGame.Game()
+        self.game.setup(gameData.NUM_PLAYERS)
+
         self.ui_elements = arcade.SpriteList()
 
-        gameData.CURRENT_TURN = 0
+        self.ui_manager = arcade.gui.UIManager()
+        self.ui_manager.enable()
+
+        v_box = arcade.gui.UIBoxLayout()
+        stand_button = PlayerStandButton(text="Stand", width=100, height=35, game=self.game)
+        v_box.add(stand_button)
+
+        v_box.center_on_screen()
+
+        # TODO: refactor all ui elements (stand button, pointer, etc.) into their own python file
+
+        self.ui_manager.add(v_box)
 
         self.turn_pointer = arcade.Sprite("UI_Sprites/Pointer.png",
                                           gameData.UI_SPRITE_SCALING,
-                                          center_x=self.players[0].center_x,
-                                          center_y=self.players[0].center_y - self.players[0].height)
+                                          center_x=self.game.players[0].center_x,
+                                          center_y=self.game.players[0].center_y - self.game.players[0].height)
 
         self.ui_elements.append(self.turn_pointer)
+
+        arcade.set_background_color(arcade.color.GREEN_YELLOW)
 
     # Draws the lists of sprites - called once per frame
     def on_draw(self):
         self.clear()
         arcade.start_render()
 
-        self.manager.draw()
-        self.card_list.draw()
-        self.players.draw()
+        self.game.card_list.draw()
+        self.game.players.draw()
         self.ui_elements.draw()
+        self.ui_manager.draw()
 
     # Updates game elements
     def on_update(self, delta_time: float):
-        self.turn_pointer.center_x = self.players[gameData.CURRENT_TURN].center_x
-        self.turn_pointer.center_y = self.players[gameData.CURRENT_TURN].center_y - self.players[
-            gameData.CURRENT_TURN].height
+        self.update_pointer()
 
-
-def generate_players(player_count: int) -> arcade.SpriteList:
-    """
-    Creates and populates GameWindow's list of players.
-
-    :param player_count: how many players the user picked for this game
-    :return: list of Sprites
-    """
-    players = arcade.SpriteList()
-    x_offset = gameData.SCREEN_X / player_count
-    x_start = gameData.SCREEN_X / (player_count * 2)
-    for i in range(player_count):
-        set_x = (i * x_offset) + x_start
-        set_y = gameData.SCREEN_Y / 4.5
-        cur_player = Player.Player(image_path="Player_Sprites/P" + str(i + 1) + ".png",
-                                   scaling=gameData.PLAYER_SPRITE_SCALING,
-                                   money=20, cards=[],
-                                   can_play_this_round=True,
-                                   location_x=set_x,
-                                   location_y=set_y)
-
-        cur_player.center_x = set_x
-        cur_player.center_y = set_y
-
-        players.append(cur_player)
-
-    return players
-
-
-def generate_card_deck() -> arcade.SpriteList:
-    """
-    Creates and populates GameWindow's list of cards.
-
-    :return: list of Sprites
-    """
-    deck = arcade.SpriteList()
-    for filename in os.listdir('Card_Sprites'):
-        if filename == 'Back.png':
-            continue
-        file_path = 'Card_Sprites/' + filename
-
-        filename = filename.split('_')
-        card_suit = filename[0]
-        card_val = get_value_from_card_name(filename[1].split('.')[0])
-
-        cur_card = Card.Card(image_path=file_path,
-                             scaling=gameData.CARD_SPRITE_SCALING,
-                             suit=card_suit, value=card_val)
-
-        cur_card.center_y = -100
-        cur_card.center_x = -100
-
-        deck.append(cur_card)
-
-    return deck
-
-
-def get_value_from_card_name(value_string: str) -> int:
-    """
-    Returns a card's numerical value based on Black Jack rules:
-    > Non-face cards: value on card
-    > Jack, Queen, King: 10
-    > Ace: 1 or 11. Returns 1 by default
-
-    :param value_string: the filename from which the card came
-    :return: int representation of given card's value
-    """
-    if value_string == "Jack" or "Queen" or "King":
-        return 10
-    elif value_string == "Ace":
-        return 1
-    else:
-        return int(value_string)
-
-
-def shuffle_deck(deck):
-    """
-    Shuffles GameWindow's card deck using Fihser-Yates shuffle.
-
-    :param deck: SpriteList
-    """
-    for i in range(len(deck) - 1, 1, -1):
-        new_index = random.randint(0, i - 1)
-
-        card_1 = deck[i]
-        card_2 = deck[new_index]
-
-        deck.remove(card_1)
-        deck.remove(card_2)
-
-        temp_x = card_1.center_x
-        temp_y = card_1.center_y
-
-        card_1.center_x = card_2.center_x
-        card_1.center_y = card_2.center_y
-
-        card_2.center_x = temp_x
-        card_2.center_y = temp_y
-
-        deck.insert(new_index, card_1)
-        deck.insert(i, card_2)
+    # Updates the visual pointer
+    def update_pointer(self):
+        self.turn_pointer.center_x = self.game.players[self.game.current_turn].center_x
+        self.turn_pointer.center_y = self.game.players[self.game.current_turn].center_y - self.game.players[
+            self.game.current_turn].height
 
 
 def get_screen_dimensions():
@@ -301,7 +221,6 @@ def main():
 
     game_window = GameWindow(gameData.SCREEN_X,
                              gameData.SCREEN_Y,
-                             gameData.NUM_PLAYERS,
                              "Black Jack")
     game_window.setup()
     game_window.run()
