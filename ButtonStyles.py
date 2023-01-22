@@ -1,4 +1,6 @@
 import arcade
+import arcade.gui
+import GameData as gameData
 
 red_style = {
             "font_name": ("calibri", "arial"),
@@ -28,3 +30,69 @@ disabled_button = {
             "border_color_pressed": arcade.color.GREEN,  # also used when hovered
             "font_color_pressed": arcade.color.BLACK,
 }
+
+
+class PlayerStandButton(arcade.gui.UIFlatButton):
+
+    def __init__(self,
+                 x: float = 0,
+                 y: float = 0,
+                 width: float = 100,
+                 height: float = 50,
+                 text="",
+                 size_hint=None,
+                 size_hint_min=None,
+                 size_hint_max=None,
+                 style=None,
+                 game=None,
+                 **kwargs):
+        super().__init__(x, y, width, height, text, size_hint, size_hint_min, size_hint_max, style)
+        self.game = game
+
+    def on_click(self, event: arcade.gui.UIOnClickEvent):
+        self.game.current_turn = (self.game.current_turn + 1) % self.game.num_players
+
+
+class PlayerHitButton(arcade.gui.UIFlatButton):
+    """
+    Class for creating a button that lets a player 'hit'.
+    """
+
+    # TODO: implement
+    def on_click(self, event: arcade.gui.UIOnClickEvent):
+        pass
+
+
+class QuitButton(arcade.gui.UIFlatButton):
+    """
+    Class for creating a button that closes the game.
+    """
+
+    def on_click(self, event: arcade.gui.UIOnClickEvent):
+        arcade.exit()
+
+
+class PlayerSelectionButton(arcade.gui.UIFlatButton):
+    """
+    Class for a set-up window button. When clicked, closes the set-up window and sets the number of players
+    for the game, as chosen by the user.
+    """
+
+    def __init__(self,
+                 x: float = 0,
+                 y: float = 0,
+                 width: float = 100,
+                 height: float = 50,
+                 text="",
+                 size_hint=None,
+                 size_hint_min=None,
+                 size_hint_max=None,
+                 style=None,
+                 num=None,
+                 **kwargs):
+        super().__init__(x, y, width, height, text, size_hint, size_hint_min, size_hint_max, style)
+        self.num = num
+
+    def on_click(self, event: arcade.gui.UIOnClickEvent):
+        gameData.NUM_PLAYERS = self.num
+        arcade.close_window()

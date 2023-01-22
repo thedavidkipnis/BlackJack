@@ -4,62 +4,7 @@ import arcade.gui
 import ButtonStyles as buttonStyles
 import GameData as gameData
 import BlackJackGame
-
-
-class PlayerStandButton(arcade.gui.UIFlatButton):
-
-    def __init__(self,
-                 x: float = 0,
-                 y: float = 0,
-                 width: float = 100,
-                 height: float = 50,
-                 text="",
-                 size_hint=None,
-                 size_hint_min=None,
-                 size_hint_max=None,
-                 style=None,
-                 game=None,
-                 **kwargs):
-        super().__init__(x, y, width, height, text, size_hint, size_hint_min, size_hint_max, style)
-        self.game = game
-
-    def on_click(self, event: arcade.gui.UIOnClickEvent):
-        self.game.current_turn = (self.game.current_turn + 1) % self.game.num_players
-
-
-class QuitButton(arcade.gui.UIFlatButton):
-    """
-    Class for creating a button that closes the game.
-    """
-
-    def on_click(self, event: arcade.gui.UIOnClickEvent):
-        arcade.exit()
-
-
-class PlayerSelectionButton(arcade.gui.UIFlatButton):
-    """
-    Class for a set-up window button. When clicked, closes the set-up window and sets the number of players
-    for the game, as chosen by the user.
-    """
-
-    def __init__(self,
-                 x: float = 0,
-                 y: float = 0,
-                 width: float = 100,
-                 height: float = 50,
-                 text="",
-                 size_hint=None,
-                 size_hint_min=None,
-                 size_hint_max=None,
-                 style=None,
-                 num=None,
-                 **kwargs):
-        super().__init__(x, y, width, height, text, size_hint, size_hint_min, size_hint_max, style)
-        self.num = num
-
-    def on_click(self, event: arcade.gui.UIOnClickEvent):
-        gameData.NUM_PLAYERS = self.num
-        arcade.close_window()
+import UIManager
 
 
 class SetupMenu(arcade.Window):
@@ -90,14 +35,14 @@ class SetupMenu(arcade.Window):
 
         # creating list of buttons for player selection
         for i in range(1, 5):
-            selection_button = PlayerSelectionButton(text=str(i), width=100, height=100, num=i,
+            selection_button = buttonStyles.PlayerSelectionButton(text=str(i), width=100, height=100, num=i,
                                                      style=buttonStyles.red_style)
             self.h_box.add(selection_button.with_space_around(right=20, left=20))
 
         self.v_box.add(self.h_box.with_space_around(bottom=100))
 
         # button for quitting the game
-        quit_button = QuitButton(text="Quit", width=200)
+        quit_button = buttonStyles.QuitButton(text="Quit", width=200)
         self.v_box.add(quit_button)
 
         # adding visual elements to be drawn
@@ -126,7 +71,6 @@ class GameWindow(arcade.Window):
 
         self.game = None
 
-        self.ui_elements = None
         self.ui_manager = None
 
         self.turn_pointer = None
@@ -136,27 +80,8 @@ class GameWindow(arcade.Window):
         self.game = BlackJackGame.Game()
         self.game.setup(gameData.NUM_PLAYERS)
 
-        self.ui_elements = arcade.SpriteList()
-
-        self.ui_manager = arcade.gui.UIManager()
-        self.ui_manager.enable()
-
-        v_box = arcade.gui.UIBoxLayout()
-        stand_button = PlayerStandButton(text="Stand", width=100, height=35, game=self.game)
-        v_box.add(stand_button)
-
-        v_box.center_on_screen()
-
-        # TODO: refactor all ui elements (stand button, pointer, etc.) into their own python file
-
-        self.ui_manager.add(v_box)
-
-        self.turn_pointer = arcade.Sprite("UI_Sprites/Pointer.png",
-                                          gameData.UI_SPRITE_SCALING,
-                                          center_x=self.game.players[0].center_x,
-                                          center_y=self.game.players[0].center_y - self.game.players[0].height)
-
-        self.ui_elements.append(self.turn_pointer)
+        self.ui_manager = UIManager.UIManager(self.game)
+        self.ui_manager.setup()
 
         arcade.set_background_color(arcade.color.GREEN_YELLOW)
 
@@ -167,18 +92,13 @@ class GameWindow(arcade.Window):
 
         self.game.card_list.draw()
         self.game.players.draw()
-        self.ui_elements.draw()
-        self.ui_manager.draw()
+        self.ui_manager.ui_elements.draw()
+        self.ui_manager.ui_manager.draw()
 
     # Updates game elements
     def on_update(self, delta_time: float):
-        self.update_pointer()
-
-    # Updates the visual pointer
-    def update_pointer(self):
-        self.turn_pointer.center_x = self.game.players[self.game.current_turn].center_x
-        self.turn_pointer.center_y = self.game.players[self.game.current_turn].center_y - self.game.players[
-            self.game.current_turn].height
+        self.ui_manager.update_pointer()
+        self.ui_manager.update_player_action_buttons()
 
 
 def get_screen_dimensions():
