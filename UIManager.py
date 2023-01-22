@@ -11,7 +11,7 @@ class UIManager:
 
         self.game = game
 
-        self.current_turn = None
+        self.current_turn = None  # is used here to update certain turn based elements when turn switches
 
         self.turn_pointer = None
 
@@ -39,15 +39,19 @@ class UIManager:
 
     def update_player_action_buttons(self):
         if self.current_turn != self.game.current_turn:
+            self.current_turn = self.game.current_turn
             player_action_buttons = arcade.gui.UIBoxLayout()
             self.ui_manager.clear()
+
             stand_button = buttonStyles.PlayerStandButton(text="Stand", width=80, height=35, game=self.game)
             hit_button = buttonStyles.PlayerHitButton(text="Hit", width=80, height=35, game=self.game)
             player_action_buttons.add(stand_button.with_space_around(bottom=20))
             player_action_buttons.add(hit_button)
-            self.current_turn = self.game.current_turn
-            self.ui_manager.add(arcade.gui.UIAnchorWidget(align_x=self.game.players[self.current_turn].center_x - (gameData.SCREEN_X/2) + 120,
-                                                          align_y=-1 * ((gameData.SCREEN_Y/2) - self.game.players[self.game.current_turn].center_y),
+
+            new_button_x = self.game.players[self.current_turn].center_x - (gameData.SCREEN_X/2) + 120
+            new_button_y = -1 * ((gameData.SCREEN_Y/2) - self.game.players[self.game.current_turn].center_y)
+
+            self.ui_manager.add(arcade.gui.UIAnchorWidget(align_x=new_button_x, align_y=new_button_y,
                                                           child=player_action_buttons))
 
     def __call__(self):
