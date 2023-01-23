@@ -92,6 +92,7 @@ class GameWindow(arcade.Window):
 
         self.game.card_list.draw()
         self.game.players.draw()
+        self.game.dealer_draw.draw()
         self.ui_manager.ui_elements.draw()
         self.ui_manager.ui_manager.draw()
 

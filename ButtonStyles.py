@@ -86,6 +86,8 @@ class PlayerHitButton(arcade.gui.UIFlatButton):
                         (i % 3) * cur_player.cards[i].width)
             cur_player.cards[i].center_y = cur_player.center_y + 150 + (cur_player.cards[i].height * (i // 3))
 
+        self.game.check_scores()
+
 
 class QuitButton(arcade.gui.UIFlatButton):
     """

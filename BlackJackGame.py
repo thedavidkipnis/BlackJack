@@ -34,6 +34,22 @@ def generate_players(player_count: int) -> arcade.SpriteList:
     return players
 
 
+def generate_dealer():
+    dealer_draw = arcade.SpriteList()
+    dealer = Player.Dealer(image_path="Player_Sprites/Dealer.png",
+                           scaling=gameData.PLAYER_SPRITE_SCALING,
+                           money=20, cards=[],
+                           can_play_this_round=True,
+                           location_x=gameData.SCREEN_X / 2,
+                           location_y=gameData.SCREEN_Y / 2)
+    dealer.center_x = gameData.SCREEN_X / 2
+    dealer.center_y = gameData.SCREEN_Y
+
+    dealer_draw.append(dealer)
+
+    return dealer_draw, dealer
+
+
 def generate_card_deck() -> arcade.SpriteList:
     """
     Creates and populates GameWindow's list of cards.
@@ -107,11 +123,15 @@ class Game:
         self.card_list = None
         self.current_turn = None
         self.current_deck_index = None
+        self.dealer = None
+        self.dealer_draw = None
 
     def setup(self, num_players):
         self.num_players = num_players
         self.players = generate_players(num_players)
         self.card_list = generate_card_deck()
+
+        self.dealer_draw, self.dealer = generate_dealer()
 
         self.current_turn = 0
 
@@ -122,6 +142,7 @@ class Game:
     def new_round(self):
         shuffle_deck(self.card_list)
 
+        # Setting players' cards
         for player in self.players:
             card_1 = self.card_list[self.current_deck_index]
             card_2 = self.card_list[self.current_deck_index + 1]
@@ -132,6 +153,30 @@ class Game:
             card_1.center_y = player.center_y + 150
             card_2.center_x = player.center_x + card_2.width / 2
             card_2.center_y = player.center_y + 150
+
+        # Setting dealer's cards
+        dealer_card_1 = self.card_list[self.current_deck_index]
+        dealer_card_2 = self.card_list[self.current_deck_index + 1]
+        self.current_deck_index += 2
+        self.dealer.cards = [dealer_card_1, dealer_card_2]
+
+        dealer_card_1.center_x = self.dealer.center_x - 50
+        dealer_card_2.center_x = self.dealer.center_x + 50
+        dealer_card_1.center_y = self.dealer.center_y - 150
+        dealer_card_2.center_y = self.dealer.center_y - 150
+
+        dealer_down_card = Card.Card(image_path="Card_Sprites/Back.png",
+                                     scaling=gameData.CARD_SPRITE_SCALING,
+                                     suit="None", value=-1)
+        dealer_down_card.center_x = dealer_card_1.center_x
+        dealer_down_card.center_y = dealer_card_1.center_y
+
+        self.dealer_draw.append(dealer_down_card)
+
+    def check_scores(self):
+        # TODO: implement to check scores at the end of every 'hit' action
+        for player in self.players:
+            pass
 
     def give_player_new_card(self, player):
         player.cards.append(self.card_list[self.current_deck_index])
