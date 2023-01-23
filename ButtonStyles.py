@@ -3,32 +3,31 @@ import arcade.gui
 import GameData as gameData
 
 red_style = {
-            "font_name": ("calibri", "arial"),
-            "font_size": 15,
-            "font_color": arcade.color.WHITE,
-            "border_width": 2,
-            "border_color": arcade.color.BLACK,
-            "bg_color": arcade.color.REDWOOD,
+    "font_name": ("calibri", "arial"),
+    "font_size": 15,
+    "font_color": arcade.color.WHITE,
+    "border_width": 2,
+    "border_color": arcade.color.BLACK,
+    "bg_color": arcade.color.REDWOOD,
 
-            # used if button is pressed
-            "bg_color_pressed": arcade.color.WHITE,
-            "border_color_pressed": arcade.color.RED,  # also used when hovered
-            "font_color_pressed": arcade.color.RED,
-        }
-
+    # used if button is pressed
+    "bg_color_pressed": arcade.color.WHITE,
+    "border_color_pressed": arcade.color.RED,  # also used when hovered
+    "font_color_pressed": arcade.color.RED,
+}
 
 disabled_button = {
-            "font_name": ("calibri", "arial"),
-            "font_size": 20,
-            "font_color": arcade.color.BLACK,
-            "border_width": 2,
-            "border_color": arcade.color.GREEN,
-            "bg_color": arcade.color.GREEN,
+    "font_name": ("calibri", "arial"),
+    "font_size": 20,
+    "font_color": arcade.color.BLACK,
+    "border_width": 2,
+    "border_color": arcade.color.GREEN,
+    "bg_color": arcade.color.GREEN,
 
-            # used if button is pressed
-            "bg_color_pressed": arcade.color.GREEN,
-            "border_color_pressed": arcade.color.GREEN,  # also used when hovered
-            "font_color_pressed": arcade.color.BLACK,
+    # used if button is pressed
+    "bg_color_pressed": arcade.color.GREEN,
+    "border_color_pressed": arcade.color.GREEN,  # also used when hovered
+    "font_color_pressed": arcade.color.BLACK,
 }
 
 
@@ -83,8 +82,9 @@ class PlayerHitButton(arcade.gui.UIFlatButton):
         else:
             x_start = cur_player.center_x - (1.5 * cur_player.cards[0].width)
         for i in range(card_count):
-            cur_player.cards[i].center_x = (cur_player.cards[i].width/2) + x_start + ((i%3) * cur_player.cards[i].width)
-            cur_player.cards[i].center_y = cur_player.center_y + 150 + (cur_player.cards[i].height*(i // 3))
+            cur_player.cards[i].center_x = (cur_player.cards[i].width / 2) + x_start + (
+                        (i % 3) * cur_player.cards[i].width)
+            cur_player.cards[i].center_y = cur_player.center_y + 150 + (cur_player.cards[i].height * (i // 3))
 
 
 class QuitButton(arcade.gui.UIFlatButton):
