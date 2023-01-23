@@ -58,9 +58,33 @@ class PlayerHitButton(arcade.gui.UIFlatButton):
     Class for creating a button that lets a player 'hit'.
     """
 
-    # TODO: implement
+    def __init__(self,
+                 x: float = 0,
+                 y: float = 0,
+                 width: float = 100,
+                 height: float = 50,
+                 text="",
+                 size_hint=None,
+                 size_hint_min=None,
+                 size_hint_max=None,
+                 style=None,
+                 game=None,
+                 **kwargs):
+        super().__init__(x, y, width, height, text, size_hint, size_hint_min, size_hint_max, style)
+        self.game = game
+
     def on_click(self, event: arcade.gui.UIOnClickEvent):
-        pass
+        cur_player = self.game.players[self.game.current_turn]
+        self.game.give_player_new_card(cur_player)
+
+        card_count = len(cur_player.cards)
+        if card_count < 3:
+            x_start = cur_player.center_x - cur_player.cards[0].width
+        else:
+            x_start = cur_player.center_x - (1.5 * cur_player.cards[0].width)
+        for i in range(card_count):
+            cur_player.cards[i].center_x = (cur_player.cards[i].width/2) + x_start + ((i%3) * cur_player.cards[i].width)
+            cur_player.cards[i].center_y = cur_player.center_y + 150 + (cur_player.cards[i].height*(i // 3))
 
 
 class QuitButton(arcade.gui.UIFlatButton):

@@ -72,7 +72,7 @@ def get_value_from_card_name(value_string: str) -> int:
     :param value_string: the filename from which the card came
     :return: int representation of given card's value
     """
-    if value_string == "Jack" or "Queen" or "King":
+    if value_string in ["Jack", "Queen", "King"]:
         return 10
     elif value_string == "Ace":
         return 1
@@ -95,15 +95,6 @@ def shuffle_deck(deck):
         deck.remove(card_1)
         deck.remove(card_2)
 
-        temp_x = card_1.center_x
-        temp_y = card_1.center_y
-
-        card_1.center_x = card_2.center_x
-        card_1.center_y = card_2.center_y
-
-        card_2.center_x = temp_x
-        card_2.center_y = temp_y
-
         deck.insert(new_index, card_1)
         deck.insert(i, card_2)
 
@@ -115,6 +106,7 @@ class Game:
         self.players = None
         self.card_list = None
         self.current_turn = None
+        self.current_deck_index = None
 
     def setup(self, num_players):
         self.num_players = num_players
@@ -123,22 +115,27 @@ class Game:
 
         self.current_turn = 0
 
+        self.current_deck_index = 0
+
         self.new_round()
 
     def new_round(self):
         shuffle_deck(self.card_list)
 
-        deck_index = 0
         for player in self.players:
-            card_1 = self.card_list[deck_index]
-            card_2 = self.card_list[deck_index + 1]
-            deck_index += 2
+            card_1 = self.card_list[self.current_deck_index]
+            card_2 = self.card_list[self.current_deck_index + 1]
+            self.current_deck_index += 2
             player.cards = [card_1, card_2]
 
-            card_1.center_x = player.center_x - 50
+            card_1.center_x = player.center_x - card_1.width / 2
             card_1.center_y = player.center_y + 150
-            card_2.center_x = player.center_x + 50
+            card_2.center_x = player.center_x + card_2.width / 2
             card_2.center_y = player.center_y + 150
+
+    def give_player_new_card(self, player):
+        player.cards.append(self.card_list[self.current_deck_index])
+        self.current_deck_index += 1
 
     def __call__(self):
         return Game()
